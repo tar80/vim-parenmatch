@@ -11,41 +11,6 @@ local match_info = ""
 local namespace = vim.api.nvim_create_namespace("parenmatch")
 local timer = nil
 
-function core.setup_ignore_filetypes(...)
-  local filetypes = ...
-  vim.api.nvim_create_autocmd("FileType", {
-    group = "parenmatch",
-    pattern = table.concat(filetypes, ","),
-    callback = function()
-      core.buf_disable(filetypes, "filetype")
-    end,
-    desc = "Ignore filetypes",
-  })
-end
-
-function core.setup_ignore_buftypes(...)
-  local buftypes = ...
-  vim.api.nvim_create_autocmd("BufEnter", {
-    group = "parenmatch",
-    pattern = "*",
-    callback = function()
-      local timer_ = vim.loop.new_timer()
-      timer_:start(
-        10,
-        0,
-        vim.schedule_wrap(function()
-          if vim.b.parenmatch then
-            return
-          end
-
-          core.buf_disable(buftypes, "buftype")
-        end)
-      )
-    end,
-    desc = "Ignore buftypes",
-  })
-end
-
 function core.buf_disable(types, type)
   if vim.bo[type] == "" then
     return
