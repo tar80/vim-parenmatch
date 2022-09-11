@@ -38,7 +38,6 @@ end
 local augroup = vim.api.nvim_create_augroup("parenmatch", {})
 
 local function autocmd_setup()
-
   vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "FileType" }, {
     group = augroup,
     pattern = "*",
