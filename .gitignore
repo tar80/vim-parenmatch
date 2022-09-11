@@ -1,1 +1,4 @@
 /doc/tags
+.gitignore
+.luarc.json
+.stylua.toml
