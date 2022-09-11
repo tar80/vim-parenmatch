@@ -1,13 +1,14 @@
 " =============================================================================
 " Filename: plugin/parenmatch.vim
-" Author: itchyny
+" Author: itchyny, tar80
 " License: MIT License
-" Last Change: 2020/05/01 19:18:42.
+" Last Change: 2022/09/10
 " =============================================================================
 
-if exists('g:loaded_parenmatch') || v:version < 703 || !exists('*matchaddpos')
+if has('nvim') || exists('g:loaded_parenmatch') || v:version < 703 || !exists('*matchaddpos')
   finish
 endif
+
 let g:loaded_parenmatch = 1
 
 let s:save_cpo = &cpo

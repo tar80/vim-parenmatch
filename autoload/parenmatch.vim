@@ -1,12 +1,48 @@
 " =============================================================================
 " Filename: autoload/parenmatch.vim
-" Author: itchyny
+" Author: itchyny, tar80
 " License: MIT License
-" Last Change: 2020/03/10 11:53:23.
+" Last Change: 2022/09/11
 " =============================================================================
+
+if has('nvim') | finish | endif
 
 let s:save_cpo = &cpo
 set cpo&vim
+
+let s:ignore_filetypes = {}
+function! parenmatch#setup_ignore_filetypes(...) abort
+  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify the filetypes." | return | endif
+  let s:ignore_filetypes = a:000
+  augroup parenmatchIgnore
+    autocmd! Filetype
+    autocmd FileType * call parenmatch#ignore_filetypes()
+  augroup End
+endfunction
+
+let s:ignore_buftypes = {}
+function! parenmatch#setup_ignore_buftypes(...) abort
+  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify the filetypes." | return | endif
+  let s:ignore_buftypes = a:000
+  augroup parenmatchIgnore
+    autocmd! BufEnter
+    if has('timers')
+      autocmd BufEnter * let timer = timer_start(10, 'parenmatch#ignore_buftypes')
+    else
+      autocmd BufEnter * call parenmatch#ignore_buftypes(v:null)
+    endif
+  augroup End
+endfunction
+
+function! parenmatch#ignore_filetypes() abort
+  if &l:filetype == "" | return | endif
+  let b:parenmatch = match(s:ignore_filetypes, &l:filetype) == -1
+endfunction
+
+function! parenmatch#ignore_buftypes(timer) abort
+  if &l:buftype == "" || (exists("b:parenmatch") && b:parenmatch == 0) | return | endif
+  if match(s:ignore_buftypes, &l:buftype) != -1 | let b:parenmatch = 0  | endif
+endfunction
 
 function! parenmatch#highlight() abort
   if !get(g:, 'parenmatch_highlight', 1) | return | endif
@@ -38,8 +74,10 @@ function! parenmatch#setup() abort
   let s:matchpairs = &l:matchpairs
   let s:paren = {}
   for [open, closed] in map(split(&l:matchpairs, ','), 'split(v:val, ":")')
-    let s:paren[open] = [ escape(open, '[]'), escape(closed, '[]'), 'nW', 'w$' ]
-    let s:paren[closed] = [ escape(open, '[]'), escape(closed, '[]'), 'bnW', 'w0' ]
+    let open_ = stridx(open, '[]') ? escape(open, '[]') : open
+    let closed_ = stridx(closed, '[]') ? escape(closed, '[]') : closed
+    let s:paren[open] = [ open_, closed_, 'nW', 'w$' ]
+    let s:paren[closed] = [ open_, closed_, 'bnW', 'w0' ]
   endfor
 endfunction
 
