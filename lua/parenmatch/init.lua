@@ -84,7 +84,7 @@ local function autocmd_setup()
 
   vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "BufWritePost" }, {
     group = augroup,
-    pattern = "*",
+    buffer = 0,
     callback = function()
       core.update()
     end,

@@ -19,11 +19,11 @@ augroup parenmatch
   if has('vim_starting')
     autocmd VimEnter * call parenmatch#highlight() |
           \ call parenmatch#setup() |
-          \ autocmd parenmatch WinEnter,BufEnter,BufWritePost * call parenmatch#update()
+          \ autocmd parenmatch WinEnter,BufEnter,BufWritePost <buffer> call parenmatch#update()
   else
     call parenmatch#highlight()
     call parenmatch#setup()
-    autocmd WinEnter,BufEnter,BufWritePost * call parenmatch#update()
+    autocmd WinEnter,BufEnter,BufWritePost <buffer> call parenmatch#update()
   endif
   autocmd ColorScheme * call parenmatch#highlight()
   autocmd CursorMoved,CursorMovedI * call parenmatch#cursormoved()

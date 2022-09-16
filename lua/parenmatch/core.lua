@@ -79,7 +79,7 @@ function core.update(arg)
     vim.fn.setpos(".", ap)
   end
 
-  if pw[1] > 0 then
+  if pw[1] > 0 and vp[2] ~= 0 then
     vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", vp[1] - 1, vp[2] - 1, vp[2])
     vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", pw[1] - 1, pw[2] - 1, pw[2])
   end
