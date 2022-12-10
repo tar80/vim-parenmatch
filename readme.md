@@ -22,6 +22,6 @@ require('parenmatch').setup({
 })
 ```
 
-### License
+### Credits
 
-MIT Copyright (c) 2022 tar80
+[itchyny/vim-parenmatch](https://github.com/itchyny/vim-parenmatch)
