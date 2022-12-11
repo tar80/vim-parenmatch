@@ -12,34 +12,34 @@ set cpo&vim
 
 let s:ignore_filetypes = {}
 function! parenmatch#setup_ignore_filetypes(...) abort
-  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify the filetypes." | return | endif
+  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify filetypes." | return | endif
   let s:ignore_filetypes = a:000
   augroup parenmatchIgnore
     autocmd! Filetype
-    autocmd FileType * call parenmatch#ignore_filetypes()
+    autocmd FileType * call s:filetype_ignore()
   augroup End
 endfunction
 
 let s:ignore_buftypes = {}
 function! parenmatch#setup_ignore_buftypes(...) abort
-  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify the filetypes." | return | endif
+  if a:0 == 0 | echo "Parenmatch: Arguments required. Please specify filetypes." | return | endif
   let s:ignore_buftypes = a:000
   augroup parenmatchIgnore
     autocmd! BufEnter
     if has('timers')
-      autocmd BufEnter * let timer = timer_start(10, 'parenmatch#ignore_buftypes')
+      autocmd BufEnter * let timer = timer_start(10, 's:buftype_ignore')
     else
-      autocmd BufEnter * call parenmatch#ignore_buftypes(v:null)
+      autocmd BufEnter * call s:buftype_ignore(v:null)
     endif
   augroup End
 endfunction
 
-function! parenmatch#ignore_filetypes() abort
+function! s:filetype_ignore() abort
   if &l:filetype == "" | return | endif
   let b:parenmatch = match(s:ignore_filetypes, &l:filetype) == -1
 endfunction
 
-function! parenmatch#ignore_buftypes(timer) abort
+function! s:buftype_ignore(timer) abort
   if &l:buftype == "" || (exists("b:parenmatch") && b:parenmatch == 0) | return | endif
   if match(s:ignore_buftypes, &l:buftype) != -1 | let b:parenmatch = 0  | endif
 endfunction
@@ -89,9 +89,9 @@ if has('timers')
       let w:parenmatch = 0
     endif
     call timer_stop(s:timer)
-    let s:timer = timer_start(50, 'parenmatch#timer_callback')
+    let s:timer = timer_start(50, 's:lazy_update')
   endfunction
-  function! parenmatch#timer_callback(...) abort
+  function! s:lazy_update(...) abort
     call parenmatch#update()
   endfunction
 else
