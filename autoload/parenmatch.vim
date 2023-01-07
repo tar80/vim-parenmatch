@@ -35,13 +35,13 @@ function! parenmatch#setup_ignore_buftypes(...) abort
 endfunction
 
 function! s:filetype_ignore() abort
-  if &l:filetype == "" | return | endif
-  let b:parenmatch = match(s:ignore_filetypes, &l:filetype) == -1
+  if &l:filetype == "" || !get(b:, "parenmatch", 1) | return | endif
+  let b:parenmatch = match(s:ignore_filetypes, &l:filetype) != -1
 endfunction
 
 function! s:buftype_ignore(timer) abort
-  if &l:buftype == "" || (exists("b:parenmatch") && b:parenmatch == 0) | return | endif
-  if match(s:ignore_buftypes, &l:buftype) != -1 | let b:parenmatch = 0  | endif
+  if &l:buftype == "" || !get(b:, "parenmatch", 1) | return | endif
+  let b:parenmatch = match(s:ignore_buftypes, &l:buftype) != -1
 endfunction
 
 function! parenmatch#highlight() abort
@@ -51,11 +51,11 @@ endfunction
 
 let s:paren = {}
 function! parenmatch#update(...) abort
-  if !get(b:, 'parenmatch', get(g:, 'parenmatch', 1)) | return | endif
+  if get(b:, 'parenmatch_disable', get(g:, 'parenmatch_disable', v:false)) | return | endif
   let i = a:0 ? a:1 : mode() ==# 'i' || mode() ==# 'R'
   let c = matchstr(getline('.'), '.', col('.') - i - 1)
-  if get(w:, 'parenmatch')
-    silent! call matchdelete(w:parenmatch)
+  if get(w:, 'parenmatch_disable')
+    silent! call matchdelete(w:parenmatch_disable)
   endif
   if !has_key(s:paren, c) | return | endif
   let [open, closed, flags, stop] = s:paren[c]

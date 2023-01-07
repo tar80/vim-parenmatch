@@ -1,29 +1,33 @@
---------------------------------------------------------------------------------
--- Filename: core.lua
--- Author: tar80
--- License: MIT License
--- Last Change: 2022/09/11
---------------------------------------------------------------------------------
+---@module "core"
+local M = {}
 
-local core = {}
-local paren_info = {}
-local match_info = ""
 local namespace = vim.api.nvim_create_namespace("parenmatch")
 local timer = nil
 
-function core.buf_disable(types, type)
+---@type table parentheses information
+local paren_info = {}
+
+---@type string paren_info loaded flag
+local match_info = ""
+
+---@param types table ignore patterns
+---@param type string
+---|`filetype`
+---|`buftype`
+function M.buf_disable(types, type)
   if vim.bo[type] == "" then
     return
   end
 
-  vim.b.parenmatch = vim.tbl_contains(types, vim.bo[type])
+  vim.b.parenmatch_disable = vim.tbl_contains(types, vim.bo[type])
 end
 
-function core.setup_highlight(value)
-  vim.api.nvim_set_hl(0, "ParenMatch", value)
+---@param tbl table highlight information
+function M.setup_highlight(tbl)
+  vim.api.nvim_set_hl(0, "ParenMatch", tbl)
 end
 
-function core.load_matchpairs()
+function M.load_matchpairs()
   local matchpairs = vim.bo.matchpairs
 
   if match_info == matchpairs then
@@ -32,19 +36,22 @@ function core.load_matchpairs()
 
   paren_info = {}
   match_info = matchpairs
-  local parenlist = vim.fn.map(vim.fn.split(matchpairs, ","), 'split(v:val, ":")')
+  local parenlist = vim.tbl_map(function (v)
+    return vim.split(v, ":", {plain = true})
+  end, vim.split(matchpairs, ",", {plain = true}))
   local open, closed
 
   for _, v in ipairs(parenlist) do
-    open = string.find(v[1], "%[]") and vim.fn.escape(v[1], "[]") or v[1]
-    closed = string.find(v[2], "%[]") and vim.fn.escape(v[2], "[]") or v[2]
+    open = v[1] == "[" and "\\[" or v[1]
+    closed = v[2] == "]" and "\\]" or v[2]
     paren_info[v[1]] = { open = open, closed = closed, flags = "nW", stop = "w$" }
     paren_info[v[2]] = { open = open, closed = closed, flags = "bnW", stop = "W0" }
   end
 end
 
-function core.update(arg)
-  if vim.g.parenmatch or vim.b.parenmatch then
+---@param arg? number adjust cursor position
+function M.update(arg)
+  if vim.g.parenmatch_disable or vim.b.parenmatch_disable then
     return
   end
 
@@ -57,7 +64,9 @@ function core.update(arg)
 
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
-  local chr = vim.fn.matchstr(vim.fn.getline("."), ".", vim.fn.col(".") - i - 1)
+
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local chr = vim.fn.matchstr(vim.fn.getline("."), ".", col - i)
   local paren = paren_info[chr]
 
   if paren == nil then
@@ -65,27 +74,28 @@ function core.update(arg)
   end
 
   -- Note:In insert mode, the character in front of the cursor is the target of the parenmatch.
-  local vp = { vim.fn.line("."), vim.fn.col(".") - i } -- virtual position
-  local ap -- actual position
+  local virtual = {row = row, col = col - i }
+  -- actual position
+  local ap
 
   if i > 0 then
     ap = vim.fn.getcurpos()
-    vim.fn.cursor(vp)
+    vim.fn.cursor(virtual)
   end
 
-  local pw = vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10)
+  local pair_row, pair_col = unpack(vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10))
 
   if i > 0 then
     vim.fn.setpos(".", ap)
   end
 
-  if pw[1] > 0 and vp[2] ~= 0 then
-    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", vp[1] - 1, vp[2] - 1, vp[2])
-    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", pw[1] - 1, pw[2] - 1, pw[2])
+  if pair_row > 0 and virtual.col ~= 0 then
+    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", virtual.row - 1, virtual.col, virtual.col + 1)
+    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", pair_row - 1, pair_col - 1, pair_col)
   end
 end
 
-function core.cursormoved()
+function M.cursormoved()
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
   if timer then
@@ -98,9 +108,9 @@ function core.cursormoved()
     50,
     0,
     vim.schedule_wrap(function()
-      core.update()
+      M.update()
     end)
   )
 end
 
-return core
+return M

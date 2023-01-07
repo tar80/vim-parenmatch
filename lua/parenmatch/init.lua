@@ -2,7 +2,6 @@
 -- Filename: init.lua
 -- Author: tar80
 -- License: MIT License
--- Last Change: 2022/09/10
 --------------------------------------------------------------------------------
 
 if vim.g.loaded_parenmatch then
@@ -11,47 +10,48 @@ end
 
 vim.g.loaded_parenmatch = true
 
+---@class Parenmatch
+---@field ignore_filetypes table
+---@field ignore_buftypes table
+_G.Parenmatch = {}
+
+local config = require("parenmatch.config")
 local core = require("parenmatch.core")
 
-local parenmatch = {}
-local options = {}
-local defaults = {
-  highlight = { underline = true },
-  ignore_filetypes = {},
-  ignore_buftypes = {},
-}
+local pm = {}
+local default_highlight = { underline = true }
+
+---@param opts any user configration
+function pm.setup(opts)
+  config.set_options(opts)
+end
 
 local augroup = vim.api.nvim_create_augroup("parenmatch", {})
-local id_ignore_filetype = 0
-local id_ignore_buftype = 0
 
-function parenmatch.setup(opts)
-  options = vim.tbl_deep_extend("force", options, opts or {})
-  core.setup_highlight(options.highlight)
-  core.load_matchpairs()
+local function autocmd_setup()
+  -- reset augroup
+    augroup = vim.api.nvim_create_augroup("parenmatch", {})
 
-  if #options.ignore_filetypes > 0 then
-    if id_ignore_filetype ~= 0 then
-      vim.api.nvim_del_autocmd(id_ignore_filetype)
-    end
-
-    id_ignore_filetype = vim.api.nvim_create_autocmd("FileType", {
-      group = "parenmatch",
+    vim.api.nvim_create_autocmd("FileType", {
+      group = augroup,
       pattern = "*",
       callback = function()
-        core.buf_disable(options.ignore_filetypes, "filetype")
+        if vim.b.parenmatch_disable then
+          return
+  end
+
+        if Parenmatch.ignore_filetypes ~= {} then
+          core.buf_disable(Parenmatch.ignore_filetypes, "filetype")
+    end
+
+        -- if not vim.b.parenmatch_disable then
+          --todo:add function filetype 
+        -- end
       end,
       desc = "Ignore filetypes",
     })
-  end
-
-  if #options.ignore_buftypes > 0 then
-    if id_ignore_buftype ~= 0 then
-      vim.api.nvim_del_autocmd(id_ignore_buftype)
-    end
-
-    id_ignore_buftype = vim.api.nvim_create_autocmd("BufEnter", {
-      group = "parenmatch",
+    vim.api.nvim_create_autocmd("BufEnter", {
+      group = augroup,
       pattern = "*",
       callback = function()
         local timer_ = vim.loop.new_timer()
@@ -59,20 +59,16 @@ function parenmatch.setup(opts)
           10,
           0,
           vim.schedule_wrap(function()
-            if vim.b.parenmatch then
+            if vim.b.parenmatch_disable or Parenmatch.ignore_buftypes == {} then
               return
             end
 
-            core.buf_disable(options.ignore_buftypes, "buftype")
+            core.buf_disable(Parenmatch.ignore_buftypes, "buftype")
           end)
         )
       end,
       desc = "Ignore buftypes",
     })
-  end
-end
-
-local function autocmd_setup()
   vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "FileType" }, {
     group = augroup,
     pattern = "*",
@@ -95,7 +91,7 @@ local function autocmd_setup()
     group = augroup,
     pattern = "*",
     callback = function()
-      core.setup_highlight(options.highlight)
+      core.setup_highlight(default_highlight)
     end,
     desc = "Apply parenmatch highlight to colorscheme",
   })
@@ -133,8 +129,6 @@ local function autocmd_setup()
   })
 end
 
-parenmatch.setup(defaults)
-
 if vim.fn.has("vim_starting") == 1 then
   vim.api.nvim_create_autocmd("UIEnter", {
     group = augroup,
@@ -149,5 +143,6 @@ else
   autocmd_setup()
 end
 
-defaults = nil
-return parenmatch
+core.load_matchpairs()
+
+return pm
