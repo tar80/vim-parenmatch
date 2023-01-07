@@ -80,7 +80,7 @@ function M.update(arg)
 
   if i > 0 then
     ap = vim.fn.getcurpos()
-    vim.fn.cursor(virtual)
+    vim.fn.cursor(virtual.row, virtual.col)
   end
 
   local pair_row, pair_col = unpack(vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10))

@@ -46,6 +46,14 @@ function M.set_options(opts)
   if opts.highlight then
     require("parenmatch.core").setup_highlight(opts.highlight)
   end
+
+  if opts.itmatch.enable then
+    local itmatch = require("parenmatch.itmatch")
+
+    if opts.itmatch.keywords then
+      itmatch.setup(opts.itmatch.keywords, tbl_append)
+    end
+  end
 end
 
 if not _G.Parenmatch.ignore_filetypes then
