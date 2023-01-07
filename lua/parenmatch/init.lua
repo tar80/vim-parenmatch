@@ -30,45 +30,41 @@ local augroup = vim.api.nvim_create_augroup("parenmatch", {})
 
 local function autocmd_setup()
   -- reset augroup
-    augroup = vim.api.nvim_create_augroup("parenmatch", {})
+  augroup = vim.api.nvim_create_augroup("parenmatch", {})
 
-    vim.api.nvim_create_autocmd("FileType", {
-      group = augroup,
-      pattern = "*",
-      callback = function()
-        if vim.b.parenmatch_disable then
-          return
-  end
+  vim.api.nvim_create_autocmd("FileType", {
+    group = augroup,
+    pattern = "*",
+    callback = function()
+      if vim.b.parenmatch_disable then
+        return
+      end
 
-        if Parenmatch.ignore_filetypes ~= {} then
-          core.buf_disable(Parenmatch.ignore_filetypes, "filetype")
-    end
+      if Parenmatch.ignore_filetypes ~= {} then
+        core.buf_disable(Parenmatch.ignore_filetypes, "filetype")
+      end
+    end,
+    desc = "Ignore filetypes",
+  })
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = augroup,
+    pattern = "*",
+    callback = function()
+      local timer_ = vim.loop.new_timer()
+      timer_:start(
+        10,
+        0,
+        vim.schedule_wrap(function()
+          if vim.b.parenmatch_disable or Parenmatch.ignore_buftypes == {} then
+            return
+          end
 
-        -- if not vim.b.parenmatch_disable then
-          --todo:add function filetype 
-        -- end
-      end,
-      desc = "Ignore filetypes",
-    })
-    vim.api.nvim_create_autocmd("BufEnter", {
-      group = augroup,
-      pattern = "*",
-      callback = function()
-        local timer_ = vim.loop.new_timer()
-        timer_:start(
-          10,
-          0,
-          vim.schedule_wrap(function()
-            if vim.b.parenmatch_disable or Parenmatch.ignore_buftypes == {} then
-              return
-            end
-
-            core.buf_disable(Parenmatch.ignore_buftypes, "buftype")
-          end)
-        )
-      end,
-      desc = "Ignore buftypes",
-    })
+          core.buf_disable(Parenmatch.ignore_buftypes, "buftype")
+        end)
+      )
+    end,
+    desc = "Ignore buftypes",
+  })
   vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter", "FileType" }, {
     group = augroup,
     pattern = "*",

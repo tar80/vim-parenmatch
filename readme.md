@@ -25,11 +25,11 @@ require('parenmatch').setup({
   -- table format of itmatch.matcher:
   -- <filetype> = {
   --    s = { Keywords that are the starting point of a match },
-  --    e = { Keywords that are the end point for a match }
+  --    e = { Keywords that are the end point of a match }
   -- }
   ]]
   itmatch = {
-  enable = true,
+    enable = true,
     matcher = {
       lua = {s = {"function", "if", "while", "repeat", "for", "do"}, e = {"end", "until"}},
       vim = {
@@ -45,7 +45,7 @@ require('parenmatch').setup({
 
 Stop highlighting parentheses.
 
-```
+```lua:
 " all buffers
 let g:parenmatch_disable = v:true
 

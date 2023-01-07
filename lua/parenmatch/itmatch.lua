@@ -25,13 +25,13 @@ local function expand_tskey()
 
   for k, v in pairs(contents) do
     if k == "s" then
-      vim.tbl_map(function (key)
+      vim.tbl_map(function(key)
         results[key] = "end_"
       end, v)
     end
 
     if k == "e" then
-      vim.tbl_map(function (key)
+      vim.tbl_map(function(key)
         results[key] = "start"
       end, v)
     end
@@ -52,16 +52,16 @@ local function cursor_to_match()
     return
   end
 
-    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-    local ts = vim.treesitter
-    local node = ts.get_node_at_pos(0, row - 1, col, {})
-    local pair_row, pair_col = node[mt](node)
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local ts = vim.treesitter
+  local node = ts.get_node_at_pos(0, row - 1, col, {})
+  local pair_row, pair_col = node[mt](node)
 
   if mt == "start" then
     pair_col = pair_col + 1
   end
 
-    vim.fn.cursor(pair_row + 1, pair_col)
+  vim.fn.cursor(pair_row + 1, pair_col)
 
   if mt == "start" and not vim.tbl_contains(vim.tbl_keys(focus_targets), vim.fn.expand("<cword>")) then
     vim.fn.feedkeys("w", "n")
@@ -72,28 +72,41 @@ end
 ---matching keywords for each filetype
 local function set_default()
   matcher = {
-    lua = {s = {"function", "if", "while", "repeat", "for", "do"}, e = {"end", "until"}},
+    lua = { s = { "function", "if", "while", "repeat", "for", "do" }, e = { "end", "until" } },
     vim = {
-      s = {"function", "fu", "if", "while", "wh", "for", "try"},
-      e = {"endfunction", "endf", "endif", "en", "endwhile", "endw", "endfor", "endfo", "endtry", "endt"}
-    }
+      s = { "function", "fu", "if", "while", "wh", "for", "try" },
+      e = { "endfunction", "endf", "endif", "en", "endwhile", "endw", "endfor", "endfo", "endtry", "endt" },
+    },
   }
 end
 
 ---@param opts table user configration
 ---@param append function `config.tbl_append(base_tbl, addition_tbl)`
-itmatch.setup = function (opts, append)
+itmatch.setup = function(opts, append)
   if not opts then
     return set_default()
   end
 
-  matcher = append(matcher, opts.matcher)
+  for key, value in pairs(opts) do
+    if not matcher[key] then
+      matcher[key] = opts[key]
+    else
+      if value.s then
+        matcher[key].s = append(matcher[key].s, value.s)
+      end
+
+      if value.e then
+        matcher[key].e = append(matcher[key].e, value.e)
+      end
+    end
+  end
+  print(vim.inspect(matcher))
 end
 
 set_default()
 
-vim.keymap.set("n", "%", function ()
+vim.keymap.set("n", "%", function()
   cursor_to_match()
-end, {silent = true})
+end, { silent = true })
 
 return itmatch

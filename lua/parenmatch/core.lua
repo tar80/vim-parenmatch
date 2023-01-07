@@ -36,9 +36,9 @@ function M.load_matchpairs()
 
   paren_info = {}
   match_info = matchpairs
-  local parenlist = vim.tbl_map(function (v)
-    return vim.split(v, ":", {plain = true})
-  end, vim.split(matchpairs, ",", {plain = true}))
+  local parenlist = vim.tbl_map(function(v)
+    return vim.split(v, ":", { plain = true })
+  end, vim.split(matchpairs, ",", { plain = true }))
   local open, closed
 
   for _, v in ipairs(parenlist) do
@@ -64,7 +64,6 @@ function M.update(arg)
 
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
-
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   local chr = vim.fn.matchstr(vim.fn.getline("."), ".", col - i)
   local paren = paren_info[chr]
@@ -74,7 +73,7 @@ function M.update(arg)
   end
 
   -- Note:In insert mode, the character in front of the cursor is the target of the parenmatch.
-  local virtual = {row = row, col = col - i }
+  local virtual = { row = row, col = col - i }
   -- actual position
   local ap
 
@@ -83,7 +82,8 @@ function M.update(arg)
     vim.fn.cursor(virtual.row, virtual.col)
   end
 
-  local pair_row, pair_col = unpack(vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10))
+  local pair_row, pair_col =
+    unpack(vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10))
 
   if i > 0 then
     vim.fn.setpos(".", ap)

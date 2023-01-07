@@ -50,8 +50,8 @@ function M.set_options(opts)
   if opts.itmatch.enable then
     local itmatch = require("parenmatch.itmatch")
 
-    if opts.itmatch.keywords then
-      itmatch.setup(opts.itmatch.keywords, tbl_append)
+    if opts.itmatch.matcher then
+      itmatch.setup(opts.itmatch.matcher, tbl_append)
     end
   end
 end
