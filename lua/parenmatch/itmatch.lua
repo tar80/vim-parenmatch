@@ -19,7 +19,7 @@ local function expand_tskey()
   local contents = matcher[ft]
   local results = {}
 
-  if contents == {} then
+  if not contents then
     return false
   end
 
@@ -43,7 +43,7 @@ end
 ---@package
 ---move cursor to match keyword
 local function cursor_to_match()
-  local focus_targets = expand_tskey()
+  local focus_targets = expand_tskey() or ""
   local cword = vim.fn.expand("<cword>")
   local mt = focus_targets[cword:lower()]
 
