@@ -65,7 +65,8 @@ function M.update(arg)
   vim.api.nvim_buf_clear_namespace(0, namespace, 0, -1)
 
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-  local chr = vim.fn.matchstr(vim.fn.getline("."), ".", col - i)
+  col = math.max(0, col - i)
+  local chr = vim.fn.matchstr(vim.fn.getline("."), ".", col)
   local paren = paren_info[chr]
 
   if paren == nil then
@@ -73,25 +74,32 @@ function M.update(arg)
   end
 
   -- Note:In insert mode, the character in front of the cursor is the target of the parenmatch.
-  local virtual = { row = row, col = col - i }
+  local virtual_pos = { row = row, col = col }
   -- actual position
-  local ap
+  local actual_pos
 
   if i > 0 then
-    ap = vim.fn.getcurpos()
-    vim.fn.cursor(virtual.row, virtual.col)
+    actual_pos = vim.fn.getcurpos()
+    vim.fn.cursor(virtual_pos.row, virtual_pos.col)
   end
 
-  local pair_row, pair_col =
+  local pair_pos_row, pair_pos_col =
     unpack(vim.fn.searchpairpos(paren.open, "", paren.closed, paren.flags, "", vim.fn.line(paren.stop), 10))
 
   if i > 0 then
-    vim.fn.setpos(".", ap)
+    vim.fn.setpos(".", actual_pos)
   end
 
-  if pair_row > 0 and virtual.col ~= 0 then
-    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", virtual.row - 1, virtual.col, virtual.col + 1)
-    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", pair_row - 1, pair_col - 1, pair_col)
+  if pair_pos_row > 0 and virtual_pos.col ~= 0 then
+    vim.api.nvim_buf_add_highlight(
+      0,
+      namespace,
+      "parenmatch",
+      virtual_pos.row - 1,
+      virtual_pos.col,
+      virtual_pos.col + 1
+    )
+    vim.api.nvim_buf_add_highlight(0, namespace, "parenmatch", pair_pos_row - 1, pair_pos_col - 1, pair_pos_col)
   end
 end
 

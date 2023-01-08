@@ -43,7 +43,7 @@ end
 ---@package
 ---move cursor to match keyword
 local function cursor_to_match()
-  local focus_targets = expand_tskey() or ""
+  local focus_targets = expand_tskey() or {}
   local cword = vim.fn.expand("<cword>")
   local mt = focus_targets[cword:lower()]
 

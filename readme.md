@@ -55,7 +55,7 @@ let b:parenmatch_disable = v:true
 
 ### Itmatch for neovim
 
-Itmatch owerrides and replaces "%" key. Only works if there is a specific keyword under the cursor, otherwise the standard behavior of the "%" key is used.  
+Itmatch overrides and replaces "%" key. Only works if there is a specific keyword under the cursor, otherwise the standard behavior of the "%" key is used.  
 Itmatch only references treesitter-node. Therefore, accurate positioning may not be possible.
 
 ### Credit
