@@ -66,7 +66,8 @@ function M.update(arg)
 
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   col = math.max(0, col - i)
-  local chr = vim.fn.matchstr(vim.fn.getline("."), ".", col)
+  local getline = vim.api.nvim_get_current_line()
+  local chr = vim.fn.matchstr(getline, ".", col)
   local paren = paren_info[chr]
 
   if paren == nil then

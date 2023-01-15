@@ -9,7 +9,7 @@ local itmatch = {}
 local matcher = {}
 
 if type(package.loaded["nvim-treesitter"]) ~= "table" then
-  return vim.notify("[itmatch] Treesitter not loaded")
+  return vim.notify("[itmatch] Treesitter not loaded", 3)
 end
 
 ---@package
@@ -28,9 +28,7 @@ local function expand_tskey()
       vim.tbl_map(function(key)
         results[key] = "end_"
       end, v)
-    end
-
-    if k == "e" then
+    elseif k == "e" then
       vim.tbl_map(function(key)
         results[key] = "start"
       end, v)
@@ -43,9 +41,9 @@ end
 ---@package
 ---move cursor to match keyword
 local function cursor_to_match()
-  local focus_targets = expand_tskey() or {}
+  local focus_target = expand_tskey() or {}
   local cword = vim.fn.expand("<cword>")
-  local mt = focus_targets[cword:lower()]
+  local mt = focus_target[cword:lower()]
 
   if not mt then
     vim.fn.feedkeys("%", "n")
@@ -63,7 +61,7 @@ local function cursor_to_match()
 
   vim.fn.cursor(pair_row + 1, pair_col)
 
-  if mt == "start" and not vim.tbl_contains(vim.tbl_keys(focus_targets), vim.fn.expand("<cword>")) then
+  if mt == "start" and not vim.tbl_contains(vim.tbl_keys(focus_target), vim.fn.expand("<cword>")) then
     vim.fn.feedkeys("w", "n")
   end
 end
@@ -105,7 +103,7 @@ end
 
 set_default()
 
-vim.keymap.set("n", "%", function()
+vim.keymap.set({"n", "v"}, "%", function()
   cursor_to_match()
 end, { silent = true })
 
