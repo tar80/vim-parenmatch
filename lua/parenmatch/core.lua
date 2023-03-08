@@ -81,7 +81,7 @@ function M.update(arg)
 
   if i > 0 then
     actual_pos = vim.fn.getcurpos()
-    vim.fn.cursor(virtual_pos.row, virtual_pos.col)
+    vim.api.nvim_win_set_cursor(0, { virtual_pos.row, virtual_pos.col })
   end
 
   local pair_pos_row, pair_pos_col =

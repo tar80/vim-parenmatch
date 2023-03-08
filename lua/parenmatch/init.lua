@@ -14,7 +14,6 @@ vim.g.loaded_parenmatch = true
 ---@field ignore_filetypes table
 ---@field ignore_buftypes table
 _G.Parenmatch = {}
-
 local config = require("parenmatch.config")
 local core = require("parenmatch.core")
 
