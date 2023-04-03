@@ -4,12 +4,6 @@
 -- License: MIT License
 --------------------------------------------------------------------------------
 
-if vim.g.loaded_parenmatch then
-  return
-end
-
-vim.g.loaded_parenmatch = true
-
 ---@class Parenmatch
 ---@field ignore_filetypes table
 ---@field ignore_buftypes table
