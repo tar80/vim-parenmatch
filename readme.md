@@ -12,10 +12,13 @@ call parenmatch#setup_ignore_filetypes("help")
 call parenmatch#setup_ignore_buftypes("nofile, popup")
 ```
 
-With neovim v0.8,
+With neovim v0.10,
+
+~~"parenmatch.setup()" is deprecated.I'll delete it soon.~~  
+leave the parenmatch.setup()
 
 ```lua
-require('parenmatch').setup({
+require('parenmatch.config').setup({
   highlight = {fg = "#DDDDDD", underline = false},
   ignore_filetypes = {"TelescopePrompt", "cmp-menu", "help"},
   ignore_buftypes = {"nofile"}
@@ -31,12 +34,18 @@ require('parenmatch').setup({
   itmatch = {
     enable = true,
     matcher = {
-      lua = {s = {"function", "if", "while", "repeat", "for", "do"}, e = {"end", "until"}},
-      vim = {
-        s = {"function", "fu", "if", "while", "wh", "for", "try"},
-        e = {"endfunction", "endf", "endif", "en", "endwhile", "endw", "endfor", "endfo", "endtry", "endt"}
+        lua = { s = { 'function', 'if', 'while', 'repeat', 'for', 'do' }, e = { 'end', 'until' } },
+        vim = {
+            s = { [=[\<fu\%[nction]\>]=], 'if', [=[<\wh\%[ile]\>]=], 'for', 'try' },
+            e = {
+                [=[\<en\%[dif]\>]=],
+                [=[\<endfor\?\>]=],
+                [=[\<endf\%[unction]\>]=],
+                [=[\<endw\%[hile]\>]=],
+                [=[\<endt\%[ry]\>]=],
+            },
+        },
     }
-  }
 })
 
 ```
