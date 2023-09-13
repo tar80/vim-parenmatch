@@ -140,7 +140,7 @@ local function detect_items(col, mode, words)
 
   local input = digit and string.format('%s%s', digit, 'l') or string.format('%s%%', is_operator(mode) and 'v' or '')
 
-  api.nvim_command(string.format('normal! %s', input))
+  vim.cmd.normal({ input, bang = true })
 end
 
 ---@param row number Row at the cursor position
@@ -160,11 +160,11 @@ local function match_node(row, col, mode, point, words, cword)
 
   local pair_row, pair_col = node[point](node)
 
-  -- if point == 'start' then
-  --   pair_col = pair_col + 1
-  -- end
+  if point == 'start' then
+    pair_col = pair_col + 1
+  end
 
-  api.nvim_command(string.format('normal! %s%sgg0%sl', is_operator(mode) and 'v' or '', pair_row + 1, pair_col - 1))
+  vim.cmd(string.format('normal! %s%sgg0%sl', is_operator(mode) and 'v' or '', pair_row + 1, pair_col - 1))
   ---@type string
   local line = api.nvim_get_current_line()
   ---@type number
@@ -172,7 +172,7 @@ local function match_node(row, col, mode, point, words, cword)
   ---@string
   local cursor_char = vim.fn.matchstr(line, '.', col)
 
-  if point == 'start' and cursor_char == ' ' then
+  if point == 'start' and not vim.tbl_contains(vim.tbl_keys(words), vim.fn.expand('<cword>')) then
     api.nvim_feedkeys('w', 'n', false)
   end
 end
@@ -191,7 +191,7 @@ itmatch.alignment = function()
   local point = find_word(words, cword:lower())
 
   if vcount > 1 then
-    api.nvim_command(string.format('normal! %s%%', vcount))
+    vim.cmd(string.format('normal! %s%%', vcount))
   elseif not point then
     detect_items(col, mode, words)
   else

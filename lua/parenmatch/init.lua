@@ -126,23 +126,23 @@ meta.matchpairs = function()
   end
 end
 
----@param adjust number Cursor position adjustment by vim-mode
+---@param adjust? integer Cursor position adjustment by vim-mode
 meta.update = function(self, adjust)
   if vim.g.parenmatch_disable or vim.b.parenmatch_disable then
     return
   end
 
-  local i = adjust or 0
+  local int = adjust or 0
 
   if not adjust then
     local mode = vim.api.nvim_get_mode().mode
-    i = (mode == 'i' or mode == 'R') and 1 or 0
+    int = (mode == 'i' or mode == 'R') and 1 or 0
   end
 
   self.clear_ns()
 
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-  col = math.max(0, col - i)
+  col = math.max(0, col - int)
   local getline = vim.api.nvim_get_current_line()
   local chr = vim.fn.matchstr(getline, '.', col)
   local paren = paren_info[chr]
@@ -155,7 +155,7 @@ meta.update = function(self, adjust)
   local virtual_pos = { row = row, col = col }
   local actual_pos
 
-  if i > 0 then
+  if int > 0 then
     actual_pos = vim.fn.getcurpos()
     vim.api.nvim_win_set_cursor(0, { virtual_pos.row, virtual_pos.col })
   end
@@ -163,11 +163,11 @@ meta.update = function(self, adjust)
   local pair_pos_row, pair_pos_col =
     unpack(vim.fn.searchpairpos(paren.open, '', paren.closed, paren.flags, '', vim.fn.line(paren.stop), 10))
 
-  if i > 0 then
+  if int > 0 then
     vim.fn.setpos('.', actual_pos)
   end
 
-  if pair_pos_row > 0 and virtual_pos.col ~= 0 then
+  if pair_pos_row > 0 and virtual_pos.col >= 0 then
     vim.api.nvim_buf_add_highlight(0, ns, 'parenmatch', virtual_pos.row - 1, virtual_pos.col, virtual_pos.col + 1)
     vim.api.nvim_buf_add_highlight(0, ns, 'parenmatch', pair_pos_row - 1, pair_pos_col - 1, pair_pos_col)
   end
