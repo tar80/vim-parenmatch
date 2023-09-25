@@ -63,7 +63,7 @@ meta.buf_disable = function(self, type)
 end
 
 meta.ignore_ft = function(self)
-  if vim.b.parenmatch_disable or vim.tbl_isempty(_G.Parenmatch.ignore_buftypes) then
+  if vim.b.parenmatch_disable or vim.tbl_isempty(_G.Parenmatch.ignore_filetypes) then
     return
   end
 
